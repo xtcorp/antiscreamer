@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         AntiScreamer
-// @namespace    https://vk.com/xtcorp
+// @namespace    https://github.com/xtcorp
 // @version      1.0
 // @description  Mute volume and prevent fullscreen mode
 // @author       xtcorp
