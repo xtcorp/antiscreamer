@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AntiScreamer
-// @namespace    https://vk.com/xtcorp
-// @version      1.0
+// @namespace    https://github.com/xtcorp
+// @version      1.1
 // @description  Mute volume and prevent fullscreen mode
 // @author       xtcorp
 // @grant        none
@@ -11,55 +11,85 @@
 // @exclude    https://www.youtube.com/watch*
 // ==/UserScript==
 (function () {
-	'use strict';
+    'use strict';
 
-	let videos = Array.from(document.querySelectorAll('video'));
-	let audios = Array.from(document.querySelectorAll('audio'));
+    function exitFullScreen() {
+        try {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        } catch (error) {
+            console.error('Exit fullscreen error:', error);
+        }
+    }
 
-	function exitFullScreen() {
-		try {
-			if (document.exitFullscreen) {
-				document.exitFullscreen();
-			} else if (document.mozCancelFullScreen) {
-				document.mozCancelFullScreen();
-			} else if (document.webkitExitFullscreen) {
-				document.webkitExitFullscreen();
-			} else if (document.msExitFullscreen) {
-				document.msExitFullscreen();
-			}
-		} catch (error) {
-			console.error('Exit fullscreen error:', error);
-		}
-	}
+    function setDefaultVolume(videos, audios, volumeperc) {
+        for (let video of videos) {
+            if (video.volume !== volumeperc) {
+                video.volume = volumeperc;
+            }
+        }
 
-	function setDefaultVolume() {
-		for (let video of videos) {
-			if (video.volume !== 0.01) {
-				video.volume = 0.01;
-			}
-		}
+        for (let audio of audios) {
+            if (audio.volume !== volumeperc) {
+                audio.volume = volumeperc;
+            }
+        }
+    }
 
-		for (let audio of audios) {
-			if (audio.volume !== 0.01) {
-				audio.volume = 0.01;
-			}
-		}
-	}
-	document.addEventListener('fullscreenchange', exitFullScreen);
-	document.addEventListener('mozfullscreenchange', exitFullScreen);
-	document.addEventListener('webkitfullscreenchange', exitFullScreen);
-	document.addEventListener('msfullscreenchange', exitFullScreen);
+    const bodyElement = document.querySelector('body');
 
-	const observer = new MutationObserver(function () {
-		videos = Array.from(document.querySelectorAll('video'));
-		audios = Array.from(document.querySelectorAll('audio'));
-		setDefaultVolume();
-	});
+    const scareElement = bodyElement.querySelector('div.scare');
 
-	observer.observe(document.documentElement, {
-		childList: true,
-		subtree: true,
-	});
+    //if prntscr screamer, if not then only lower volume to 0.01
+    if(scareElement != null) {
+        const videoElements = scareElement.querySelectorAll('video');
+        videoElements.forEach(videoElement => {
+            videoElement.style.width = '0px';
+            videoElement.style.height = '0px';
+            videoElement.volume = 0.0;
+        });
 
-	exitFullScreen();
+        let videos = Array.from(document.querySelectorAll('video'));
+        let audios = Array.from(document.querySelectorAll('audio'));
+
+        const observer = new MutationObserver(function () {
+            videos = Array.from(document.querySelectorAll('video'));
+            audios = Array.from(document.querySelectorAll('audio'));
+            setDefaultVolume(videos, audios, 0.0);
+        });
+
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+        });
+    } else {
+        let videos = Array.from(document.querySelectorAll('video'));
+        let audios = Array.from(document.querySelectorAll('audio'));
+
+        const observer = new MutationObserver(function () {
+            videos = Array.from(document.querySelectorAll('video'));
+            audios = Array.from(document.querySelectorAll('audio'));
+            setDefaultVolume(videos, audios, 0.01);
+        });
+
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+        });
+    }
+
+    document.addEventListener('fullscreenchange', exitFullScreen);
+    document.addEventListener('mozfullscreenchange', exitFullScreen);
+    document.addEventListener('webkitfullscreenchange', exitFullScreen);
+    document.addEventListener('msfullscreenchange', exitFullScreen);
+
+    exitFullScreen();
+
 })();
