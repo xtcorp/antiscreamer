@@ -63,6 +63,11 @@
             videos = Array.from(document.querySelectorAll('video'));
             audios = Array.from(document.querySelectorAll('audio'));
             setDefaultVolume(videos, audios, 0.0);
+            videos.forEach(video => {
+                video.style.width = '0px';
+                video.style.height = '0px';
+                video.volume = 0.0;
+            });
         });
 
         observer.observe(document.documentElement, {
