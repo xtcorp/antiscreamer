@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         AntiScreamer
-// @namespace    https://github.com/xtcorp
+// @namespace    https://vk.com/xtcorp
 // @version      1.0
 // @description  Mute volume and prevent fullscreen mode
 // @author       xtcorp
@@ -11,57 +11,55 @@
 // @exclude    https://www.youtube.com/watch*
 // ==/UserScript==
 (function () {
-    'use strict';
+	'use strict';
 
-    const videos = document.querySelectorAll('video');
-    const audios = document.querySelectorAll('audio');
+	let videos = Array.from(document.querySelectorAll('video'));
+	let audios = Array.from(document.querySelectorAll('audio'));
 
-    function exitFullScreen() {
-        document.exitFullscreen();
-        document.mozCancelFullScreen();
-        document.webkitExitFullscreen();
-        document.msExitFullscreen();
-    }
+	function exitFullScreen() {
+		try {
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			} else if (document.mozCancelFullScreen) {
+				document.mozCancelFullScreen();
+			} else if (document.webkitExitFullscreen) {
+				document.webkitExitFullscreen();
+			} else if (document.msExitFullscreen) {
+				document.msExitFullscreen();
+			}
+		} catch (error) {
+			console.error('Exit fullscreen error:', error);
+		}
+	}
 
-    function setDefaultVolume() {
-        videos.forEach((video) => {
-            if (video.volume !== 0.01) {
-                video.volume = 0.01;
-            }
-        });
+	function setDefaultVolume() {
+		for (let video of videos) {
+			if (video.volume !== 0.01) {
+				video.volume = 0.01;
+			}
+		}
 
-        audios.forEach((audio) => {
-            if (audio.volume !== 0.01) {
-                audio.volume = 0.01;
-            }
-        });
-    }
+		for (let audio of audios) {
+			if (audio.volume !== 0.01) {
+				audio.volume = 0.01;
+			}
+		}
+	}
+	document.addEventListener('fullscreenchange', exitFullScreen);
+	document.addEventListener('mozfullscreenchange', exitFullScreen);
+	document.addEventListener('webkitfullscreenchange', exitFullScreen);
+	document.addEventListener('msfullscreenchange', exitFullScreen);
 
-    videos.forEach((video) => {
-        video.addEventListener('volumechange', () => {
-            video.volume = 0.01;
-        });
-    });
+	const observer = new MutationObserver(function () {
+		videos = Array.from(document.querySelectorAll('video'));
+		audios = Array.from(document.querySelectorAll('audio'));
+		setDefaultVolume();
+	});
 
-    audios.forEach((audio) => {
-        audio.addEventListener('volumechange', () => {
-            audio.volume = 0.01;
-        });
-    });
+	observer.observe(document.documentElement, {
+		childList: true,
+		subtree: true,
+	});
 
-    document.addEventListener('fullscreenchange', () => {
-        exitFullScreen();
-    });
-    document.addEventListener('mozfullscreenchange', () => {
-        exitFullScreen();
-    });
-    document.addEventListener('webkitfullscreenchange', () => {
-        exitFullScreen();
-    });
-    document.addEventListener('msfullscreenchange', () => {
-        exitFullScreen();
-    });
-
-    exitFullScreen();
-    setDefaultVolume();
+	exitFullScreen();
 })();
